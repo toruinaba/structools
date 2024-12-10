@@ -92,14 +92,31 @@ class LippedChannelSection(SteelSection):
 
     @property
     def area(self) -> float:
-        """断面積"""
-        return (self.h * self.t_w + 
-                2 * self.b * self.t_f + 
-                2 * self.d * self.t_l)
+        """断面積を計算する
+
+        :return: 断面積 [mm2]
+        """
+        # 各部材の面積
+        web_area = self.h * self.t_w
+        flange_area = 2 * self.b * self.t_f
+        lip_area = 2 * self.d * self.t_l
+        
+        # 板厚の重なり部分の面積
+        web_flange_overlap = 2 * self.t_w * self.t_f  # ウェブとフランジの重なり
+        flange_lip_overlap = 2 * self.t_f * self.t_l   # フランジとリップの重なり
+        
+        return (web_area + 
+                flange_area + 
+                lip_area - 
+                web_flange_overlap - 
+                flange_lip_overlap)
 
     @property
     def centroid(self) -> Tuple[float, float]:
-        """重心位置 (x, y)"""
+        """重心位置を計算する
+
+        :return: 重心座標 (x, y) [mm]
+        """
         x_c = (2 * self.b * self.t_f * self.b/2 + 
                2 * self.d * self.t_l * (self.b + self.d/2)) / self.area
         y_c = self.h / 2  # 上下対称
@@ -133,7 +150,10 @@ class LippedChannelSection(SteelSection):
 
     @property
     def moment_of_inertia_strong(self) -> float:
-        """強軸断面二次モーメント (Ix)"""
+        """強軸まわりの断面二次モーメントを計算する
+
+        :return: 強軸断面二次モーメント Ix [mm4]
+        """
         return (self.moment_of_inertia_strong_web + 
                 self.moment_of_inertia_strong_flange + 
                 self.moment_of_inertia_strong_lip)
@@ -164,25 +184,37 @@ class LippedChannelSection(SteelSection):
 
     @property
     def moment_of_inertia_weak(self) -> float:
-        """弱軸断面二次モーメント (Iy)"""
+        """弱軸まわりの断面二次モーメントを計算する
+
+        :return: 弱軸断面二次モーメント Iy [mm4]
+        """
         return (self.moment_of_inertia_weak_web + 
                 self.moment_of_inertia_weak_flange + 
                 self.moment_of_inertia_weak_lip)
 
     @property
     def section_modulus_strong(self) -> float:
-        """強軸断面係数"""
+        """強軸まわりの断面係数を計算する
+
+        :return: 強軸断面係数 Zx [mm3]
+        """
         return self.moment_of_inertia_strong / (self.h/2)
 
     @property
     def section_modulus_weak(self) -> float:
-        """弱軸断面係数"""
+        """弱軸まわりの断面係数を計算する
+
+        :return: 弱軸断面係数 Zy [mm3]
+        """
         x_c = self.centroid[0]
         return self.moment_of_inertia_weak / x_c
 
     @property
     def torsion_constant(self) -> float:
-        """ねじり定数 (J)"""
+        """ねじり定数を計算する
+
+        :return: ねじり定数 J [mm4]
+        """
         # 薄肉断面の近似式
         return (self.h * self.t_w**3 + 
                 2 * self.b * self.t_f**3 + 
@@ -190,14 +222,20 @@ class LippedChannelSection(SteelSection):
 
     @property
     def warping_constant(self) -> float:
-        """そり定数 (Cw)"""
+        """そり定数を計算する
+
+        :return: そり定数 Cw [mm6]
+        """
         # 近似式
         return (self.moment_of_inertia_weak * self.h**2 / 4) * \
                (1 - (3 * self.b) / (2 * self.h))
 
     @property
     def shear_center(self) -> Tuple[float, float]:
-        """せん断中心位置 (x, y)"""
+        """せん断中心位置を計算する
+
+        :return: せん断中心座標 (x, y) [mm]
+        """
         # リップの影響を考慮した修正係数
         k = 1 + (self.d/self.b)**2 * (self.t_l/self.t_f)
         
