@@ -346,14 +346,28 @@ class HSection(SteelSection):
         self.t_f = t_f
 
     @property
+    def web_area(self) -> float:
+        """ウェブ部分の断面積を計算する
+
+        :return: ウェブの断面積 [mm2]
+        """
+        return (self.h - 2 * self.t_f) * self.t_w
+
+    @property
+    def flange_area(self) -> float:
+        """フランジ部分の断面積を計算する
+
+        :return: フランジの断面積 [mm2]（上下フランジの合計）
+        """
+        return 2 * self.b * self.t_f
+
+    @property
     def area(self) -> float:
         """断面積を計算する
 
         :return: 断面積 [mm2]
         """
-        web_area = (self.h - 2 * self.t_f) * self.t_w
-        flange_area = 2 * self.b * self.t_f
-        return web_area + flange_area
+        return self.web_area + self.flange_area
 
     @property
     def centroid(self) -> Tuple[float, float]:
