@@ -163,6 +163,7 @@ class LippedChannelSection(SteelSection):
     def calculate_properties(self) -> SteelSectionProperties:
         """断面性能を計算して返す"""
         return SteelSectionProperties(
+            area=self.area,
             moment_of_inertia_x=self.moment_of_inertia_strong,
             moment_of_inertia_y=self.moment_of_inertia_weak,
             torsional_constant=self.torsion_constant,
