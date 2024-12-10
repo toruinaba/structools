@@ -99,3 +99,104 @@ class TestLippedChannelSection:
         assert abs(section.web_width_thickness_ratio - expected_web_ratio) < 0.01
         assert abs(section.flange_width_thickness_ratio - expected_flange_ratio) < 0.01
         assert abs(section.lip_width_thickness_ratio - expected_lip_ratio) < 0.01
+
+
+class TestHSection:
+    """H形鋼のテストクラス"""
+
+    @pytest.fixture
+    def section(self):
+        """テストで使用する標準的なH形鋼断面"""
+        return HSection(h=400, b=200, t_w=8, t_f=13)
+
+    def test_initialization(self, section):
+        """H形鋼の初期化テスト"""
+        assert section.h == 400
+        assert section.b == 200
+        assert section.t_w == 8
+        assert section.t_f == 13
+
+    def test_invalid_dimensions(self):
+        """不正な寸法でのエラー処理テスト"""
+        with pytest.raises(ValueError):
+            HSection(-400, 200, 8, 13)  # 負の値
+        with pytest.raises(ValueError):
+            HSection(400, 0, 8, 13)     # ゼロ値
+        with pytest.raises(TypeError):
+            HSection("400", 200, 8, 13)  # 文字列
+
+    def test_area_calculations(self, section):
+        """断面積計算のテスト"""
+        # 個別の面積
+        expected_web_area = (400 - 2*13) * 8
+        expected_flange_area = 2 * 200 * 13
+        
+        assert section.web_area == pytest.approx(expected_web_area)
+        assert section.flange_area == pytest.approx(expected_flange_area)
+        
+        # 全体の面積
+        expected_total_area = expected_web_area + expected_flange_area
+        assert section.area == pytest.approx(expected_total_area)
+
+    def test_moment_of_inertia(self, section):
+        """断面二次モーメントのテスト"""
+        # 強軸
+        Ix = section.moment_of_inertia_strong
+        assert Ix > 0
+        assert isinstance(Ix, float)
+        
+        # 弱軸
+        Iy = section.moment_of_inertia_weak
+        assert Iy > 0
+        assert isinstance(Iy, float)
+        assert Ix > Iy  # 強軸の方が大きいことを確認
+
+    def test_section_modulus(self, section):
+        """断面係数のテスト"""
+        # 強軸
+        Zx = section.section_modulus_strong
+        assert Zx == pytest.approx(section.moment_of_inertia_strong / (section.h/2))
+        
+        # 弱軸
+        Zy = section.section_modulus_weak
+        assert Zy == pytest.approx(section.moment_of_inertia_weak / (section.b/2))
+
+    def test_width_thickness_ratios(self, section):
+        """幅厚比のテスト"""
+        expected_web_ratio = (400 - 2*13) / 8
+        expected_flange_ratio = (200/2) / 13
+        
+        assert section.web_width_thickness_ratio == pytest.approx(expected_web_ratio)
+        assert section.flange_width_thickness_ratio == pytest.approx(expected_flange_ratio)
+
+    def test_width_thickness_check(self, section):
+        """幅厚比制限値チェックのテスト"""
+        # SN400での確認
+        result = section.check_width_thickness_ratios("SN400")
+        assert "web" in result
+        assert "flange" in result
+        assert all(key in result["web"] for key in ["ratio", "limit", "status"])
+        assert all(key in result["flange"] for key in ["ratio", "limit", "status"])
+        
+        # 未対応の鋼材グレード
+        with pytest.raises(ValueError):
+            section.check_width_thickness_ratios("INVALID")
+
+    def test_calculate_properties(self, section):
+        """断面性能計算メソッドのテスト"""
+        props = section.calculate_properties()
+        
+        assert isinstance(props, SteelSectionProperties)
+        assert props.area == pytest.approx(section.area)
+        assert props.moment_of_inertia_x == pytest.approx(section.moment_of_inertia_strong)
+        assert props.moment_of_inertia_y == pytest.approx(section.moment_of_inertia_weak)
+        assert props.torsional_constant == pytest.approx(section.torsion_constant)
+        assert props.warping_constant == pytest.approx(section.warping_constant)
+
+    def test_centroid(self, section):
+        """重心位置のテスト"""
+        x, y = section.centroid
+        
+        # H形鋼は対称断面なので、重心は幾何学的中心
+        assert x == pytest.approx(section.b/2)
+        assert y == pytest.approx(section.h/2)
