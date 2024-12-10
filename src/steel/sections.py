@@ -323,8 +323,140 @@ class LippedChannelSection(SteelSection):
 
 
 class HSection(SteelSection):
-    """H形鋼の具体的な実装"""
-    pass
+    """H形鋼の具体的な実装
+    
+    :param h: 断面せい [mm]
+    :param b: フランジ幅 [mm]
+    :param t_w: ウェブ厚 [mm]
+    :param t_f: フランジ厚 [mm]
+    
+    :raises ValueError: 寸法や板厚が0以下の場合
+    :raises TypeError: 数値以外が指定された場合
+    """
+    # 寸法のバリデーション付きプロパティ
+    h = PositiveFloat("断面せい", "断面せい [mm]")
+    b = PositiveFloat("フランジ幅", "フランジ幅 [mm]")
+    t_w = PositiveFloat("ウェブ厚", "ウェブ厚 [mm]")
+    t_f = PositiveFloat("フランジ厚", "フランジ厚 [mm]")
+
+    def __init__(self, h: float, b: float, t_w: float, t_f: float):
+        self.h = h
+        self.b = b
+        self.t_w = t_w
+        self.t_f = t_f
+
+    @property
+    def area(self) -> float:
+        """断面積を計算する
+
+        :return: 断面積 [mm2]
+        """
+        web_area = (self.h - 2 * self.t_f) * self.t_w
+        flange_area = 2 * self.b * self.t_f
+        return web_area + flange_area
+
+    @property
+    def centroid(self) -> Tuple[float, float]:
+        """重心位置を計算する
+
+        :return: 重心座標 (x, y) [mm]
+        """
+        # H形鋼は対称断面のため、重心は断面の中心
+        return (self.b/2, self.h/2)
+
+    @property
+    def moment_of_inertia_strong(self) -> float:
+        """強軸まわりの断面二次モーメントを計算する
+
+        :return: 強軸断面二次モーメント Ix [mm4]
+        """
+        # ウェブの寄与
+        web_i = self.t_w * (self.h - 2*self.t_f)**3 / 12
+        # フランジの寄与（平行軸の定理を使用）
+        d = (self.h - self.t_f) / 2  # 重心からフランジ重心までの距離
+        flange_i = 2 * (self.b * self.t_f**3 / 12 + self.b * self.t_f * d**2)
+        return web_i + flange_i
+
+    @property
+    def moment_of_inertia_weak(self) -> float:
+        """弱軸まわりの断面二次モーメントを計算する
+
+        :return: 弱軸断面二次モーメント Iy [mm4]
+        """
+        # ウェブの寄与
+        web_i = (self.h - 2*self.t_f) * self.t_w**3 / 12
+        # フランジの寄与
+        flange_i = 2 * (self.t_f * self.b**3 / 12)
+        return web_i + flange_i
+
+    @property
+    def section_modulus_strong(self) -> float:
+        """強軸まわりの断面係数を計算する
+
+        :return: 強軸断面係数 Zx [mm3]
+        """
+        return self.moment_of_inertia_strong / (self.h/2)
+
+    @property
+    def section_modulus_weak(self) -> float:
+        """弱軸まわりの断面係数を計算する
+
+        :return: 弱軸断面係数 Zy [mm3]
+        """
+        return self.moment_of_inertia_weak / (self.b/2)
+
+    @property
+    def torsion_constant(self) -> float:
+        """ねじり定数を計算する
+
+        :return: ねじり定数 J [mm4]
+        """
+        # 薄肉断面の近似式
+        return ((self.h - 2*self.t_f) * self.t_w**3 + 
+                2 * self.b * self.t_f**3) / 3
+
+    @property
+    def warping_constant(self) -> float:
+        """そり定数を計算する
+
+        :return: そり定数 Cw [mm6]
+        """
+        # H形鋼のそり定数の計算式
+        h_f = self.h - self.t_f  # フランジ重心間距離
+        return self.t_f * self.b**3 * h_f**2 / 24
+
+    def calculate_properties(self) -> SteelSectionProperties:
+        """断面性能を計算して返す
+        
+        :return: 計算された全ての断面性能を含むSteelSectionPropertiesオブジェクト
+        """
+        return SteelSectionProperties(
+            area=self.area,
+            moment_of_inertia_x=self.moment_of_inertia_strong,
+            moment_of_inertia_y=self.moment_of_inertia_weak,
+            torsional_constant=self.torsion_constant,
+            plastic_moment_x=self.section_modulus_strong * 1.5,  # 簡易的な計算
+            plastic_moment_y=self.section_modulus_weak * 1.5,    # 簡易的な計算
+            warping_constant=self.warping_constant,
+            shear_center_x=self.b/2,  # 対称断面のため重心と一致
+            shear_center_y=self.h/2    # 対称断面のため重心と一致
+        )
+
+    @property
+    def web_width_thickness_ratio(self) -> float:
+        """ウェブの幅厚比
+        
+        :return: ウェブの幅厚比 ((h-2t_f)/t_w) [-]
+        """
+        return (self.h - 2*self.t_f) / self.t_w
+
+    @property
+    def flange_width_thickness_ratio(self) -> float:
+        """フランジの幅厚比
+        
+        :return: フランジの幅厚比 (b/2t_f) [-]
+        """
+        return (self.b/2) / self.t_f
 
 
 class BoxSection(SteelSection):
