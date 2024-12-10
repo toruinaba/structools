@@ -238,11 +238,11 @@ class LippedChannelSection(SteelSection):
             raise ValueError("板厚は正の値である必要があります")
 
 
-class HSection(ThinWalledSection):
+class HSection(SteelSection):
     """H形鋼の具体的な実装"""
     pass
 
 
-class BoxSection(ThinWalledSection):
+class BoxSection(SteelSection):
     """箱形断面の具体的な実装"""
     pass
