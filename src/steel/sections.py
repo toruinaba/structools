@@ -458,6 +458,48 @@ class HSection(SteelSection):
         """
         return (self.b/2) / self.t_f
 
+    def check_width_thickness_ratios(self, steel_grade: str = "SN400") -> dict:
+        """幅厚比の制限値との比較を行う
+        
+        :param steel_grade: 鋼材の強度区分 (デフォルト: "SN400")
+        :return: 各部材の幅厚比と制限値の比較結果
+        
+        使用例:
+            >>> section = HSection(400, 200, 8, 13)
+            >>> result = section.check_width_thickness_ratios("SN400")
+            >>> print(result)
+            {
+                'web': {'ratio': 46.15, 'limit': 72, 'status': 'OK'},
+                'flange': {'ratio': 7.69, 'limit': 12, 'status': 'OK'}
+            }
+        """
+        # 鋼材強度に応じた制限値（JIS G 3136に基づく）
+        limits = {
+            "SN400": {"web": 72, "flange": 12},
+            "SN490": {"web": 67, "flange": 11},
+            "SM490": {"web": 67, "flange": 11},
+            "SM520": {"web": 60, "flange": 10}
+        }
+        
+        if steel_grade not in limits:
+            raise ValueError(f"未対応の鋼材グレード: {steel_grade}")
+        
+        web_ratio = self.web_width_thickness_ratio
+        flange_ratio = self.flange_width_thickness_ratio
+        
+        return {
+            "web": {
+                "ratio": round(web_ratio, 2),
+                "limit": limits[steel_grade]["web"],
+                "status": "OK" if web_ratio <= limits[steel_grade]["web"] else "NG"
+            },
+            "flange": {
+                "ratio": round(flange_ratio, 2),
+                "limit": limits[steel_grade]["flange"],
+                "status": "OK" if flange_ratio <= limits[steel_grade]["flange"] else "NG"
+            }
+        }
+
 
 class BoxSection(SteelSection):
     """箱形断面の具体的な実装"""
