@@ -37,9 +37,9 @@ def test_lipped_channel_section_properties():
     props = section.calculate_properties()
     assert isinstance(props, SteelSectionProperties)
     assert props.area > 0
-    assert props.moment_of_inertia_strong > 0
-    assert props.moment_of_inertia_weak > 0
-    assert props.torsion_constant > 0
+    assert props.moment_of_inertia_x > 0
+    assert props.moment_of_inertia_y > 0
+    assert props.torsional_constant > 0
 
 def test_invalid_dimensions():
     """不正な寸法に対するバリデーションテスト"""
