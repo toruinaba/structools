@@ -5,3 +5,4 @@ Sphinx
 sphinx-autobuild
 sphinx-autodoc-typehints
 sphinx-rtd-theme
+aider-chat
