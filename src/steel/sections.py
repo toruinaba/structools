@@ -1,7 +1,7 @@
-from ..core.section import ThinWalledSection, SectionProperties
+from ..core.section import SectionProperties
 from dataclasses import dataclass
 from abc import abstractmethod, ABC
-from typing import Protocol, Tuple, Any
+from typing import Tuple, Any
 
 
 class PositiveFloat:
