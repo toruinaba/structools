@@ -4,7 +4,7 @@ from abc import abstractmethod, ABC
 from typing import Protocol, Tuple
 
 
-class steel_section(ABC):
+class SteelSection(ABC):
     """鋼構造断面の抽象基底クラス"""
     
     @property
