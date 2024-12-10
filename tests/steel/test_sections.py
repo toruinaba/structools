@@ -1,5 +1,5 @@
 import pytest
-from src.steel.sections import LippedChannelSection, SteelSectionProperties
+from src.steel.sections import LippedChannelSection, SteelSectionProperties, HSection
 
 class TestLippedChannelSection:
     """リップ付き溝形鋼のテストクラス"""
