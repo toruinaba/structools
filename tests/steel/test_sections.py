@@ -8,7 +8,9 @@ def test_lipped_channel_section_initialization():
     assert section.h == 200
     assert section.b == 75
     assert section.d == 20
-    assert section.t == 2.3
+    assert section.t_w == 2.3
+    assert section.t_f == 2.3
+    assert section.t_l == 2.3
 
 def test_lipped_channel_section_area():
     """リップ付き溝形鋼の断面積計算テスト"""

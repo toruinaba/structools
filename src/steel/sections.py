@@ -161,13 +161,24 @@ class LippedChannelSection(SteelSection):
         return (x_s, y_s)
     
     def calculate_properties(self) -> SteelSectionProperties:
-        # 具体的な断面性能計算の実装
-        return SteelSectionProperties(...)
+        """断面性能を計算して返す"""
+        return SteelSectionProperties(
+            moment_of_inertia_x=self.moment_of_inertia_strong,
+            moment_of_inertia_y=self.moment_of_inertia_weak,
+            torsional_constant=self.torsion_constant,
+            plastic_moment_x=self.section_modulus_strong * 1.5,  # 簡易的な計算
+            plastic_moment_y=self.section_modulus_weak * 1.5,    # 簡易的な計算
+            warping_constant=self.warping_constant,
+            shear_center_x=self.shear_center[0],
+            shear_center_y=self.shear_center[1]
+        )
     
     def _validate_dimensions(self):
         """寸法の妥当性検証"""
         if self.h <= 0 or self.b <= 0 or self.d <= 0:
             raise ValueError("寸法は正の値である必要があります")
+        if self.t_w <= 0 or self.t_f <= 0 or self.t_l <= 0:
+            raise ValueError("板厚は正の値である必要があります")
 
 
 class HSection(ThinWalledSection):
