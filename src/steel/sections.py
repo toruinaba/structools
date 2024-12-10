@@ -1,7 +1,32 @@
 from ..core.section import ThinWalledSection, SectionProperties
 from dataclasses import dataclass
 from abc import abstractmethod, ABC
-from typing import Protocol, Tuple
+from typing import Protocol, Tuple, Any
+
+
+class PositiveFloat:
+    """正の浮動小数点数を保証するデータ記述子
+    
+    :param name: パラメータの名前（エラーメッセージ用）
+    :param doc: プロパティのドキュメント文字列
+    """
+    def __init__(self, name: str, doc: str | None = None):
+        self.name = name
+        self.private_name = f"_{name}"
+        if doc is not None:
+            self.__doc__ = doc
+
+    def __get__(self, obj: Any, objtype: Any = None) -> float:
+        if obj is None:
+            return self
+        return getattr(obj, self.private_name)
+
+    def __set__(self, obj: Any, value: float):
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"{self.name}は数値である必要があります")
+        if value <= 0:
+            raise ValueError(f"{self.name}は正の値である必要があります")
+        setattr(obj, self.private_name, float(value))
 
 
 class SteelSection(ABC):
@@ -79,7 +104,16 @@ class LippedChannelSection(SteelSection):
     :param t_l: リップ厚 [mm]
     
     :raises ValueError: 寸法や板厚が0以下の場合
+    :raises TypeError: 数値以外が指定された場合
     """
+    # 寸法のバリデーション付きプロパティ
+    h = PositiveFloat("ウェブ高さ", "ウェブ高さ [mm]")
+    b = PositiveFloat("フランジ幅", "フランジ幅 [mm]")
+    d = PositiveFloat("リップ長さ", "リップ長さ [mm]")
+    t_w = PositiveFloat("ウェブ厚", "ウェブ厚 [mm]")
+    t_f = PositiveFloat("フランジ厚", "フランジ厚 [mm]")
+    t_l = PositiveFloat("リップ厚", "リップ厚 [mm]")
+
     def __init__(self, h: float, b: float, d: float, 
                  t_w: float, t_f: float, t_l: float):
         self.h = h
@@ -88,7 +122,6 @@ class LippedChannelSection(SteelSection):
         self.t_w = t_w
         self.t_f = t_f
         self.t_l = t_l
-        self._validate_dimensions()
 
     @property
     def area(self) -> float:
@@ -287,17 +320,6 @@ class LippedChannelSection(SteelSection):
         """
         return self.d / self.t_l
 
-    def _validate_dimensions(self):
-        """寸法の妥当性検証
-        
-        全ての寸法と板厚が正の値であることを確認する。
-        
-        :raises ValueError: 寸法や板厚が0以下の場合
-        """
-        if self.h <= 0 or self.b <= 0 or self.d <= 0:
-            raise ValueError("寸法は正の値である必要があります")
-        if self.t_w <= 0 or self.t_f <= 0 or self.t_l <= 0:
-            raise ValueError("板厚は正の値である必要があります")
 
 
 class HSection(SteelSection):
