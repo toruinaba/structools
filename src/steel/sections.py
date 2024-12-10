@@ -64,7 +64,7 @@ class SteelSectionProperties(SectionProperties):
     shear_center_x: float
     shear_center_y: float
 
-class LippedChannelSection(ThinWalledSection):
+class LippedChannelSection(SteelSection):
     """リップ付き溝形鋼の具体的な実装"""
     def __init__(self, h: float, b: float, d: float, 
                  t_w: float, t_f: float, t_l: float):
