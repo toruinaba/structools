@@ -21,8 +21,14 @@ class TestLippedChannelSection:
 
     def test_area(self, section):
         """リップ付き溝形鋼の断面積計算テスト"""
-        # 断面積 = t * (h + 2b + 2d)
-        expected_area = 2.3 * (200 + 2*75 + 2*20)
+        # 各部材の面積
+        web_area = 200 * 2.3
+        flange_area = 2 * 75 * 2.3
+        lip_area = 2 * 20 * 2.3
+        # 重なり部分を差し引く
+        overlap_area = 2 * 2.3 * 2.3  # ウェブとフランジの重なり
+        overlap_area += 2 * 2.3 * 2.3  # フランジとリップの重なり
+        expected_area = web_area + flange_area + lip_area - overlap_area
         assert abs(section.area - expected_area) < 0.01
 
     def test_centroid(self, section):
