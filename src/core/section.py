@@ -4,7 +4,7 @@ from typing import Protocol, Dict, Any
 
 
 # 断面の基本プロトコル
-class SectionProtocol(Protocol):
+class section_protocol(Protocol):
     @property
     def area(self) -> float:
         """断面積"""
@@ -17,7 +17,7 @@ class SectionProtocol(Protocol):
 
 
 # 断面の抽象基底クラス
-class BaseSection(ABC):
+class base_section(ABC):
     """全ての断面に共通する基本機能を定義"""
     
     @abstractmethod
@@ -32,7 +32,7 @@ class BaseSection(ABC):
 
 
 # 基本的な断面形状の抽象クラス
-class RectangularSection(BaseSection):
+class rectangular_section(base_section):
     """矩形断面の基本クラス"""
     def __init__(self, width: float, height: float):
         self.width = width
@@ -43,14 +43,14 @@ class RectangularSection(BaseSection):
         return self.width * self.height
 
 
-class CircularSection(BaseSection):
+class circular_section(base_section):
     """円形断面の基本クラス"""
     def __init__(self, diameter: float):
         self.diameter = diameter
 
 
 # 薄肉断面の基底クラス
-class ThinWalledSection(BaseSection):
+class thin_walled_section(base_section):
     """薄肉断面に共通する機能を定義"""
     
     @abstractmethod
@@ -66,7 +66,7 @@ class ThinWalledSection(BaseSection):
 
 # 断面性能の基本データクラス
 @dataclass
-class SectionProperties:
+class section_properties:
     """断面性能を保持するデータクラス"""
     area: float
     moment_of_inertia_x: float
