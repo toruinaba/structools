@@ -92,34 +92,50 @@ class LippedChannelSection(SteelSection):
         return (x_c, y_c)
 
     @property
+    def moment_of_inertia_strong_web(self) -> float:
+        """強軸断面二次モーメントのウェブ寄与分"""
+        return self.t_w * self.h**3 / 12
+
+    @property
+    def moment_of_inertia_strong_flange(self) -> float:
+        """強軸断面二次モーメントのフランジ寄与分"""
+        return 2 * (self.t_f * self.b**3 / 12 + 
+                   self.b * self.t_f * (self.b/2)**2)
+
+    @property
+    def moment_of_inertia_strong_lip(self) -> float:
+        """強軸断面二次モーメントのリップ寄与分"""
+        return 2 * (self.t_l * self.d**3 / 12 + 
+                   self.d * self.t_l * (self.b + self.d/2)**2)
+
+    @property
     def moment_of_inertia_strong(self) -> float:
         """強軸断面二次モーメント (Ix)"""
-        # ウェブの寄与
-        I_web = self.t_w * self.h**3 / 12
-        
-        # フランジの寄与
-        I_flange = 2 * (self.t_f * self.b**3 / 12 + 
-                        self.b * self.t_f * (self.b/2)**2)
-        
-        # リップの寄与
-        I_lip = 2 * (self.t_l * self.d**3 / 12 + 
-                     self.d * self.t_l * (self.b + self.d/2)**2)
-        
-        return I_web + I_flange + I_lip
+        return (self.moment_of_inertia_strong_web + 
+                self.moment_of_inertia_strong_flange + 
+                self.moment_of_inertia_strong_lip)
+
+    @property
+    def moment_of_inertia_weak_web(self) -> float:
+        """弱軸断面二次モーメントのウェブ寄与分"""
+        return self.h * self.t_w**3 / 12
+
+    @property
+    def moment_of_inertia_weak_flange(self) -> float:
+        """弱軸断面二次モーメントのフランジ寄与分"""
+        return 2 * self.b * self.t_f * (self.h/2)**2
+
+    @property
+    def moment_of_inertia_weak_lip(self) -> float:
+        """弱軸断面二次モーメントのリップ寄与分"""
+        return 2 * self.d * self.t_l * (self.h/2)**2
 
     @property
     def moment_of_inertia_weak(self) -> float:
         """弱軸断面二次モーメント (Iy)"""
-        # ウェブの寄与
-        I_web = self.h * self.t_w**3 / 12
-        
-        # フランジの寄与
-        I_flange = 2 * self.b * self.t_f * (self.h/2)**2
-        
-        # リップの寄与
-        I_lip = 2 * self.d * self.t_l * (self.h/2)**2
-        
-        return I_web + I_flange + I_lip
+        return (self.moment_of_inertia_weak_web + 
+                self.moment_of_inertia_weak_flange + 
+                self.moment_of_inertia_weak_lip)
 
     @property
     def section_modulus_strong(self) -> float:

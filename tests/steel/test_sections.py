@@ -42,6 +42,32 @@ class TestLippedChannelSection:
         assert props.moment_of_inertia_y > 0
         assert props.torsional_constant > 0
 
+    def test_moment_of_inertia_strong_components(self, section):
+        """強軸断面二次モーメントの各成分テスト"""
+        # 各成分が正の値
+        assert section.moment_of_inertia_strong_web > 0
+        assert section.moment_of_inertia_strong_flange > 0
+        assert section.moment_of_inertia_strong_lip > 0
+        
+        # 合計が全体の値と一致
+        total = (section.moment_of_inertia_strong_web + 
+                section.moment_of_inertia_strong_flange + 
+                section.moment_of_inertia_strong_lip)
+        assert abs(total - section.moment_of_inertia_strong) < 0.01
+
+    def test_moment_of_inertia_weak_components(self, section):
+        """弱軸断面二次モーメントの各成分テスト"""
+        # 各成分が正の値
+        assert section.moment_of_inertia_weak_web > 0
+        assert section.moment_of_inertia_weak_flange > 0
+        assert section.moment_of_inertia_weak_lip > 0
+        
+        # 合計が全体の値と一致
+        total = (section.moment_of_inertia_weak_web + 
+                section.moment_of_inertia_weak_flange + 
+                section.moment_of_inertia_weak_lip)
+        assert abs(total - section.moment_of_inertia_weak) < 0.01
+
     def test_invalid_dimensions(self):
         """不正な寸法に対するバリデーションテスト"""
         with pytest.raises(ValueError):
