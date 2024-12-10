@@ -5,7 +5,11 @@ from typing import Protocol, Tuple
 
 
 class SteelSection(ABC):
-    """鋼構造断面の抽象基底クラス"""
+    """鋼構造断面の抽象基底クラス
+    
+    全ての鋼構造断面に共通する基本的な断面性能を定義する抽象基底クラス。
+    各具体的な断面形状クラスはこのクラスを継承して実装する。
+    """
     
     @property
     @abstractmethod
@@ -65,7 +69,17 @@ class SteelSectionProperties(SectionProperties):
     shear_center_y: float
 
 class LippedChannelSection(SteelSection):
-    """リップ付き溝形鋼の具体的な実装"""
+    """リップ付き溝形鋼の具体的な実装
+    
+    :param h: ウェブ高さ [mm]
+    :param b: フランジ幅 [mm]
+    :param d: リップ長さ [mm]
+    :param t_w: ウェブ厚 [mm]
+    :param t_f: フランジ厚 [mm]
+    :param t_l: リップ厚 [mm]
+    
+    :raises ValueError: 寸法や板厚が0以下の場合
+    """
     def __init__(self, h: float, b: float, d: float, 
                  t_w: float, t_f: float, t_l: float):
         self.h = h
@@ -93,18 +107,27 @@ class LippedChannelSection(SteelSection):
 
     @property
     def moment_of_inertia_strong_web(self) -> float:
-        """強軸断面二次モーメントのウェブ寄与分"""
+        """強軸断面二次モーメントのウェブ寄与分
+        
+        :return: ウェブ部分の強軸周りの断面二次モーメント [mm4]
+        """
         return self.t_w * self.h**3 / 12
 
     @property
     def moment_of_inertia_strong_flange(self) -> float:
-        """強軸断面二次モーメントのフランジ寄与分"""
+        """強軸断面二次モーメントのフランジ寄与分
+        
+        :return: フランジ部分の強軸周りの断面二次モーメント [mm4]
+        """
         return 2 * (self.t_f * self.b**3 / 12 + 
                    self.b * self.t_f * (self.b/2)**2)
 
     @property
     def moment_of_inertia_strong_lip(self) -> float:
-        """強軸断面二次モーメントのリップ寄与分"""
+        """強軸断面二次モーメントのリップ寄与分
+        
+        :return: リップ部分の強軸周りの断面二次モーメント [mm4]
+        """
         return 2 * (self.t_l * self.d**3 / 12 + 
                    self.d * self.t_l * (self.b + self.d/2)**2)
 
@@ -117,17 +140,26 @@ class LippedChannelSection(SteelSection):
 
     @property
     def moment_of_inertia_weak_web(self) -> float:
-        """弱軸断面二次モーメントのウェブ寄与分"""
+        """弱軸断面二次モーメントのウェブ寄与分
+        
+        :return: ウェブ部分の弱軸周りの断面二次モーメント [mm4]
+        """
         return self.h * self.t_w**3 / 12
 
     @property
     def moment_of_inertia_weak_flange(self) -> float:
-        """弱軸断面二次モーメントのフランジ寄与分"""
+        """弱軸断面二次モーメントのフランジ寄与分
+        
+        :return: フランジ部分の弱軸周りの断面二次モーメント [mm4]
+        """
         return 2 * self.b * self.t_f * (self.h/2)**2
 
     @property
     def moment_of_inertia_weak_lip(self) -> float:
-        """弱軸断面二次モーメントのリップ寄与分"""
+        """弱軸断面二次モーメントのリップ寄与分
+        
+        :return: リップ部分の弱軸周りの断面二次モーメント [mm4]
+        """
         return 2 * self.d * self.t_l * (self.h/2)**2
 
     @property
@@ -177,7 +209,10 @@ class LippedChannelSection(SteelSection):
         return (x_s, y_s)
     
     def calculate_properties(self) -> SteelSectionProperties:
-        """断面性能を計算して返す"""
+        """断面性能を計算して返す
+        
+        :return: 計算された全ての断面性能を含むSteelSectionPropertiesオブジェクト
+        """
         return SteelSectionProperties(
             area=self.area,
             moment_of_inertia_x=self.moment_of_inertia_strong,
@@ -191,7 +226,12 @@ class LippedChannelSection(SteelSection):
         )
     
     def _validate_dimensions(self):
-        """寸法の妥当性検証"""
+        """寸法の妥当性検証
+        
+        全ての寸法と板厚が正の値であることを確認する。
+        
+        :raises ValueError: 寸法や板厚が0以下の場合
+        """
         if self.h <= 0 or self.b <= 0 or self.d <= 0:
             raise ValueError("寸法は正の値である必要があります")
         if self.t_w <= 0 or self.t_f <= 0 or self.t_l <= 0:
