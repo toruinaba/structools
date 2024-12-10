@@ -225,6 +225,30 @@ class LippedChannelSection(SteelSection):
             shear_center_y=self.shear_center[1]
         )
     
+    @property
+    def web_width_thickness_ratio(self) -> float:
+        """ウェブの幅厚比
+        
+        :return: ウェブの幅厚比 (h/t_w) [-]
+        """
+        return self.h / self.t_w
+
+    @property
+    def flange_width_thickness_ratio(self) -> float:
+        """フランジの幅厚比
+        
+        :return: フランジの幅厚比 (b/t_f) [-]
+        """
+        return self.b / self.t_f
+
+    @property
+    def lip_width_thickness_ratio(self) -> float:
+        """リップの幅厚比
+        
+        :return: リップの幅厚比 (d/t_l) [-]
+        """
+        return self.d / self.t_l
+
     def _validate_dimensions(self):
         """寸法の妥当性検証
         

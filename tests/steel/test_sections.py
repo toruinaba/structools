@@ -81,3 +81,15 @@ class TestLippedChannelSection:
         
         with pytest.raises(ValueError):
             LippedChannelSection(h=200, b=75, d=20, t_w=-2.3, t_f=-2.3, t_l=-2.3)
+
+    def test_width_thickness_ratios(self, section):
+        """幅厚比の計算テスト"""
+        # 期待値の計算
+        expected_web_ratio = 200 / 2.3
+        expected_flange_ratio = 75 / 2.3
+        expected_lip_ratio = 20 / 2.3
+
+        # 計算値と期待値の比較
+        assert abs(section.web_width_thickness_ratio - expected_web_ratio) < 0.01
+        assert abs(section.flange_width_thickness_ratio - expected_flange_ratio) < 0.01
+        assert abs(section.lip_width_thickness_ratio - expected_lip_ratio) < 0.01
